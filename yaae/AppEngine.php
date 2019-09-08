@@ -48,7 +48,7 @@ class AppEngine
             'baseRequest' => new Request(),
             'baseResponse' => new Response(),
             'baseHttpErrorHandler' => ['YAAE\Http\RequestHandler','handleHttpError'],
-            'baseFatalErrorHandler' => ['YAAE\Http\RequestHandler','handleFatalError'],
+//            'baseFatalErrorHandler' => ['YAAE\Http\RequestHandler','handleFatalError'],
         ];
     }
 
@@ -126,18 +126,18 @@ class AppEngine
 
     public static function start()
     {
-        $baseFatalErrorHandler = self::getConfig('baseFatalErrorHandler');
-        register_shutdown_function(function () use ($baseFatalErrorHandler) {
-            $lastError = error_get_last();
-            if (!empty($lastError)) {
-                $errorCode = $lastError['type'];
-                $errorMsg = $lastError['message'] . ' ; ' .  $lastError['file'] . ' ; ' . $lastError['line'];
-                CallableHandler::tryHandleCallableWithArguments(
-                    $baseFatalErrorHandler,
-                    [new HttpException($errorMsg, $errorCode)]
-                );
-            }
-        });
+//        $baseFatalErrorHandler = self::getConfig('baseFatalErrorHandler');
+//        register_shutdown_function(function () use ($baseFatalErrorHandler) {
+//            $lastError = error_get_last();
+//            if (!empty($lastError)) {
+//                $errorCode = $lastError['type'];
+//                $errorMsg = $lastError['message'] . ' ; ' .  $lastError['file'] . ' ; ' . $lastError['line'];
+//                CallableHandler::tryHandleCallableWithArguments(
+//                    $baseFatalErrorHandler,
+//                    [new HttpException($errorMsg, $errorCode)]
+//                );
+//            }
+//        });
 
         try {
 
