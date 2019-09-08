@@ -106,6 +106,9 @@ class RouteDispatcher
                 case Route::METHOD_PATCH:
                     $r->patch($routeInfo->path, $routeInfo->path);
                     break;
+                case Route::METHOD_DELETE:
+                    $r->delete($routeInfo->path, $routeInfo->path);
+                    break;
                 case Route::METHOD_ANY:
                     $r->addRoute(['GET', 'POST', 'PUT', 'PATCH'], $routeInfo->path, $routeInfo->path);
                     break;
