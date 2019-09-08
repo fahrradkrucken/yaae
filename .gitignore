@@ -1,0 +1,10 @@
+vendor
+./vendor
+/vendor
+
+.idea
+./.idea
+/.idea
+
+index.php
+.htaccess
