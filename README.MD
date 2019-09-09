@@ -1,13 +1,11 @@
-## Yet Another AppEngine
+# Yet Another AppEngine
 
 This peace of "code" is just a wrapper around FastRoute and s a simple start 
  point for your codebase. Please, keep in mind 3 simple facts: it's not a 
  framework, it was written in about 5 hours, most of it made while author 
  was drunk.
  
-### Application Lifecycle
-
----
+## Application Lifecycle
 
 #### Quick Start
 
@@ -41,17 +39,23 @@ Basically it's just a RouterWrapper + some kind of ServiceLocator, so simple
      $routeApi->delete('/horse/{id}', $someCallback);
  });
  
+ AppEngine::setConfig('baseDir', __DIR__); 
+ 
  AppEngine::start();
  ```
  
  Routing works on top of FastRoute, so you can use any thing that FastRoute can do 
   for you, with all that nested route groups & named route params.
   
+#### Action Callbacks
+
+You can use any `callable` parameter, or some kind of Laravel style `ControllerClass@actionMethod`.
+  
 #### Request & Response 
 
 Well, Request & Response objects are not interesting at all, and they're not like
 PSR best practices. But! But you can manipulate them as you want, so they could
-become more pretty with your code. We have 4 rules:
+become more pretty with your code. We have 3 rules:
 * Request Handler accepts 1 arg `(RequestInterface $request)` and SHOULD return
 `(RequestInterface $request)`;
 * Action handler accepts 2 args `(RequestInterface $request, ResponseInterface $response)` and 
@@ -147,10 +151,8 @@ AppEngine::start();
 Now if we'll go to `/john-wick/set-status/1`, our global JohnWick becomes a 'badGuy'. It's not the best example, but
 who cares.
  
-### Configuration
+## Configuration
  
----
-
 #### Main Config
 
 In fact, application config is just a storage for different variables that you may need later. So you can put something
@@ -166,6 +168,8 @@ use YAAE\Http\Request;
 use YAAE\Http\Response;
 use YAAE\Http\HttpException;
 
+// -- Required Action (AppEngine should know directory root)
+AppEngine::setConfig('baseDir', __DIR__); // Default $_SERVER['DIRECTORY_ROOT']
 // -- Source for route parsing
 AppEngine::setConfig('baseUrl', $_GET['route']); // Default $_SERVER['REQUEST_URI'] without $_GET params
 // -- Custom Request / Response
@@ -190,3 +194,33 @@ AppEngine::setConfig('baseHttpErrorHandler', function (HttpException $exception)
 
 Inside your Action handlers (controllers) you can throw any exception that was inherited from `YAAE\Http\HttpException` 
 and it'll be handled by your default error handler.
+
+## Templating
+
+Well, I think you'll want to use your favorite template engine through 
+`AppEngine::set('tpl_engine', $your_tpl_engine_init_callback)`.
+You should just put the render result into Request, and then return Request as described before, 
+like `$request->setData( AppEngine::get('tpl_engine')->render($some_params) )`.
+
+Anyway, you have the 'fast way' too:
+
+```php
+<?php
+use YAAE\AppEngine;
+use YAAE\Http\Response;
+
+AppEngine::setConfig('templatePath', __DIR__ . 'app/views');
+
+$response = new Response();
+
+$response->setData(
+    AppEngine::tpl(
+        'user/view',                // First Param is template name (templatePath & '.php' ext will be added)
+        [
+            'userId' => 25,         // Second is and array of params to put into the template file
+            'userName' => 'Feofan'
+        ]
+    )
+);
+
+```

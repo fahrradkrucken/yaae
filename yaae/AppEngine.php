@@ -42,14 +42,16 @@ class AppEngine
     {
         $this->rootRoute = new RouteGroup();
         $this->config = [
-            'baseUrl' => (false !== $pos = strpos($_SERVER['REQUEST_URI'], '?')) ?
+            'baseUrl'              => (false !== $pos = strpos($_SERVER['REQUEST_URI'], '?')) ?
                 substr($_SERVER['REQUEST_URI'], 0, $pos) :
                 $_SERVER['REQUEST_URI'],
-            'baseRequest' => new Request(),
-            'baseResponse' => new Response(),
-            'baseHttpErrorHandler' => ['YAAE\Http\RequestHandler','handleHttpError'],
-//            'baseFatalErrorHandler' => ['YAAE\Http\RequestHandler','handleFatalError'],
+            'baseRequest'          => new Request(),
+            'baseResponse'         => new Response(),
+            'baseHttpErrorHandler' => ['YAAE\Http\RequestHandler', 'handleHttpError'],
+            'baseDir' => $_SERVER['DOCUMENT_ROOT'],
+            //            'baseFatalErrorHandler' => ['YAAE\Http\RequestHandler','handleFatalError'],
         ];
+        $this->config['templatePath'] = $this->config['baseDir'] . '/tpl';
     }
 
     private function __clone()
@@ -99,7 +101,7 @@ class AppEngine
 
     /**
      * @param string $paramName
-     * @param mixed $paramValue
+     * @param mixed  $paramValue
      */
     public static function setConfig(string $paramName, $paramValue)
     {
@@ -177,5 +179,28 @@ class AppEngine
         }
         echo $response->getData();
         exit();
+    }
+
+    /**
+     * @param string $templateName
+     * @param array  $variables
+     *
+     * @return string
+     */
+    public static function tpl(string $templateName, array $variables = [])
+    {
+        $templatePath = str_replace(
+            ['//', '\\\\', '/', '\\',],
+            DIRECTORY_SEPARATOR,
+            self::getConfig('templatePath') . '/' . $templateName . '.php'
+        );
+        $templateContent = '';
+        if (is_file($templatePath)) {
+            ob_start();
+            if (!empty($variables)) extract($variables, EXTR_OVERWRITE);
+            include($templatePath);
+            $templateContent = ob_get_clean();
+        }
+        return (string)$templateContent;
     }
 }
