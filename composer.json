@@ -7,7 +7,7 @@
     },
     "autoload": {
         "psr-4": {
-            "fahrradkrucken\\YAAE\\": "yaae"
+            "YAAE\\": "yaae"
         }
     }
 }
