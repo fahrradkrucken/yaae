@@ -1,16 +1,14 @@
 <?php
 
 
-namespace YAAE\Http;
+namespace FahrradKrucken\YAAE\Http;
 
-
-use YAAE\Router\RouteInfo;
 
 interface RequestInterface
 {
-    public function getCurrentRoute(): RouteInfo;
+    public function getRouteInfo(): array ;
 
-    public function setCurrentRoute(RouteInfo $currentRoute);
+    public function setRouteInfo(array $routeInfo);
 
     public function getHeaders(): array;
 

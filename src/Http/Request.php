@@ -1,18 +1,13 @@
 <?php
 
-
-namespace YAAE\Http;
-
-
-use YAAE\Router\RouteInfo;
+namespace FahrradKrucken\YAAE\Http;
 
 class Request implements RequestInterface
 {
-
     /**
-     * @var RouteInfo
+     * @var array
      */
-    private $currentRoute;
+    private $routeInfo = [];
 
     /**
      * @var array
@@ -49,17 +44,23 @@ class Request implements RequestInterface
             }
             $this->setData($params);
         }
-        $this->headers = \getallheaders();
+        $headers = [];
+        foreach ($_SERVER as $name => $value) {
+            if (substr($name, 0, 5) == 'HTTP_') {
+                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+            }
+        }
+        $this->headers = $headers;
     }
 
-    public function getCurrentRoute(): RouteInfo
+    public function getRouteInfo(): array
     {
-        return $this->currentRoute;
+        return $this->routeInfo;
     }
 
-    public function setCurrentRoute(RouteInfo $currentRoute)
+    public function setRouteInfo(array $routeInfo)
     {
-        $this->currentRoute = $currentRoute;
+        $this->routeInfo = $routeInfo;
     }
 
     public function getHeaders(): array

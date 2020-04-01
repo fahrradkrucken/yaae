@@ -1,7 +1,7 @@
 <?php
 
 
-namespace YAAE\Http;
+namespace FahrradKrucken\YAAE\Http;
 
 
 interface ResponseInterface

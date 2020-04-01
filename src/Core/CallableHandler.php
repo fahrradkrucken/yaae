@@ -1,6 +1,7 @@
 <?php
 
-namespace YAAE\Core;
+
+namespace FahrradKrucken\YAAE\Core;
 
 
 class CallableHandler

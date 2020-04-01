@@ -1,13 +1,10 @@
 {
     "name": "fahrradkrucken/yaae",
-    "description": "Yet Another API Engine (PHP)",
+    "description": "Yet Another PHP Engine",
     "minimum-stability": "dev",
-    "require": {
-        "nikic/fast-route": "^2.0"
-    },
     "autoload": {
         "psr-4": {
-            "YAAE\\": "yaae"
+            "FahrradKrucken\\YAAE\\": "src"
         }
     }
 }

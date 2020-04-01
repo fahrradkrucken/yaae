@@ -1,21 +1,28 @@
 <?php
 
 
-namespace YAAE\Http;
+namespace FahrradKrucken\YAAE\Http;
 
 
 class Response implements ResponseInterface
 {
+
+    private static $blalb = [
+        self::STATUS_NOT_FOUND => 'dsasda'
+    ];
+
+    /**
+     * @var int
+     */
     private $status = self::STATUS_OK;
     /**
      * @var array
      */
     private $headers = [];
     /**
-     * @var null|string
+     * @var null|string|array
      */
     private $data = '';
-
 
     public function getStatus(): int
     {
