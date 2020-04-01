@@ -9,7 +9,8 @@ This peace of "code" is just a wrapper around FastRoute and s a simple start
 
 #### Quick Start
 
-Basically it's just a Request-Response handler:
+Basically it's just a Request-Response handler.
+See simple example in `demo/demo.php`. 
   
 #### Action Callbacks
 
@@ -35,7 +36,55 @@ SHOULD return `ResponseInterface $request`;
  
 #### Main Config
 
+You can replace request method and path through:
+* `$engine->setRequestPath(string $requestPath)`, default is `$_SERVER['REQUEST_URI']`, 
+without `/` at the end and without params after `?`;
+* `$engine->setRequestMethod(string $requestMethod)`, default is `$_SERVER['REQUEST_METHOD']`
+
+You can replace default classes:
+* `FahrradKrucken\YAAE\Http\Request` through `$engine->setRequest(RequestInterface $request)`;
+* `FahrradKrucken\YAAE\Http\Response` through `$engine->setResponse(ResponseInterface $response)`; 
+* `FahrradKrucken\YAAE\Core\RouteHandler` through `$engine->setRouteHandler(RouteHandlerInterface $routeHandler)`.
+
 #### Errors
+
+You can replace error handlers:
+* `\Throwable` errors handler through `$engine->setErrorHandler(callable $errorHandler)`;
+* `\FahrradKrucken\YAAE\Http\Error` errors handler through `$engine->setErrorHandlerHttp(callable $errorHandler)`.
+
+Note that `\FahrradKrucken\YAAE\Http\Error` has `$request` and `$response` props, it could be useful. 
+For example, when you'll get 404 (Not Found) or 405 (Method not allowed) error from `RouteHandler`, 
+you can understand this by `$errorHttp->response->getStatus()`.
 
 ## Templating
 
+#### HTML
+
+You can use any templating engine you want, just dont forget to put the result 
+inside the `$response->setData($templateHtmlString)`. If you prefer simple 
+php-html templating, you can use default `FahrradKrucken\YAAE\Core\TemplateHandler`.
+You can find examples in the `demo` dir.
+
+#### JSON & other API
+
+If you need to send responses in JSON format (for example), you can add response 
+handler to single route or to the route group. Like this:
+
+```php
+<?php
+use FahrradKrucken\YAAE\Core\Route;
+// .. some code ...
+Route::get('/some-json', function (RequestInterface $request, ResponseInterface $response) {
+        $response->setData([
+            'foo' => 12345,
+            'bar' => 'Lorem ipsum dolor sit amet',
+            'baz' => false,
+        ]);
+        return $response;
+    })->addResponseCallback(function (ResponseInterface $response) {
+        $response->setHeader('Content-Type', 'application/json');
+        $response->setData(json_encode($response->getData(), JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE));
+        return $response;
+    });
+// .. some code ...
+``` 

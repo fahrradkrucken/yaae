@@ -2,6 +2,7 @@
 
 use FahrradKrucken\YAAE\Http\RequestInterface;
 use FahrradKrucken\YAAE\Http\ResponseInterface;
+use FahrradKrucken\YAAE\Core\TemplateHandler;
 
 function DemoHandlerFunction(RequestInterface $request, ResponseInterface $response)
 {
@@ -36,6 +37,18 @@ class DemoHandlerClass
         $data .= '</pre>';
         $response->setData($data);
 
+        return $response;
+    }
+
+    public function actionTemplate(RequestInterface $request, ResponseInterface $response)
+    {
+        $routeParams = $request->getRouteInfo()['arguments'];
+        $response->setData(
+            TemplateHandler::render('demo-template', [
+                'foo' => $routeParams['foo'],
+                'bar' => $routeParams['bar'],
+            ])
+        );
         return $response;
     }
 
