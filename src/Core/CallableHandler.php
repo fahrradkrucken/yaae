@@ -3,9 +3,20 @@
 
 namespace FahrradKrucken\YAAE\Core;
 
-
+/**
+ * Class CallableHandler
+ * @package FahrradKrucken\YAAE\Core
+ */
 class CallableHandler
 {
+    /**
+     * Run some callable, including Laravel-style (ex. "Class@method")
+     *
+     * @param callable|string $callable
+     * @param array           $arguments
+     *
+     * @return bool|mixed
+     */
     public static function tryHandleCallableWithArguments($callable, $arguments)
     {
         if (is_callable($callable)) {

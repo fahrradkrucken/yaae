@@ -3,6 +3,7 @@
 namespace FahrradKrucken\YAAE;
 
 use FahrradKrucken\YAAE\Core\CallableHandler;
+use FahrradKrucken\YAAE\Core\Route;
 use FahrradKrucken\YAAE\Core\RouteHandler;
 use FahrradKrucken\YAAE\Core\RouteHandlerInterface;
 use FahrradKrucken\YAAE\Http\Request;
@@ -11,6 +12,10 @@ use FahrradKrucken\YAAE\Http\Response;
 use FahrradKrucken\YAAE\Http\ResponseInterface;
 use FahrradKrucken\YAAE\Http\Error;
 
+/**
+ * Class Engine
+ * @package FahrradKrucken\YAAE
+ */
 class Engine
 {
     /**
@@ -46,46 +51,83 @@ class Engine
         $this->errorHandlerHttp = [$this, 'errorHandlerDefault'];
     }
 
+    /**
+     * Replace default route handler, if you need it
+     *
+     * @param RouteHandlerInterface $routeHandler
+     */
     public function setRouteHandler(RouteHandlerInterface $routeHandler)
     {
         $this->routeHandler = $routeHandler;
     }
 
+    /**
+     * Replace default Request object
+     *
+     * @param RequestInterface $request
+     */
     public function setRequest(RequestInterface $request)
     {
         $this->request = $request;
     }
 
+    /**
+     * Replace default Response object
+     *
+     * @param ResponseInterface $response
+     */
     public function setResponse(ResponseInterface $response)
     {
         $this->response = $response;
     }
 
+    /**
+     * Set default error handler
+     *
+     * @param callable $errorHandler - should accept \Throwable
+     */
     public function setErrorHandler(callable $errorHandler)
     {
         $this->errorHandler = $errorHandler;
     }
 
+    /**
+     * Set default Error handler
+     *
+     * @param callable $errorHandler - should accept \FahrradKrucken\YAAE\Http\Error
+     */
     public function setErrorHandlerHttp(callable $errorHandler)
     {
         $this->errorHandlerHttp = $errorHandler;
     }
 
+    /**
+     * @param string $requestPath - request path for router
+     */
     public function setRequestPath(string $requestPath)
     {
         $this->routeHandler->setRequestPath($requestPath);
     }
 
+    /**
+     * @param string $requestMethod - request method for router
+     */
     public function setRequestMethod(string $requestMethod)
     {
         $this->routeHandler->setRequestMethod($requestMethod);
     }
 
+    /**
+     * @param Route[] $routes - array of \FahrradKrucken\YAAE\Core\Route objects
+     */
     public function addRoutes(array $routes)
     {
         $this->routeHandler->addRoutes($routes);
     }
 
+    /**
+     * @param \Throwable $error - Default error handler
+     */
     public function errorHandlerDefault(\Throwable $error)
     {
         if (($error instanceof Error) && ($error->response instanceof ResponseInterface)) {
@@ -98,6 +140,9 @@ class Engine
         }
     }
 
+    /**
+     * Start dispatching routes (start the whole application)
+     */
     public function start()
     {
         $this->routeHandler->dispatch();
@@ -112,7 +157,7 @@ class Engine
             switch ($this->routeHandler->getCurrentRouteStatus()) {
 
                 case RouteHandlerInterface::STATUS_NOT_FOUND:
-                    $error = new Error();
+                    $error = new Error('NOT FOUND', ResponseInterface::STATUS_NOT_FOUND);
                     $this->response->setStatus(ResponseInterface::STATUS_NOT_FOUND);
                     $this->response->setData('NOT FOUND');
                     $error->request = $this->request;
@@ -121,7 +166,7 @@ class Engine
                     break;
 
                 case RouteHandlerInterface::STATUS_METHOD_NOT_ALLOWED:
-                    $error = new Error();
+                    $error = new Error('METHOD NOT ALLOWED', ResponseInterface::STATUS_NOT_ALLOWED_METHOD);
                     $this->response->setStatus(ResponseInterface::STATUS_NOT_ALLOWED_METHOD);
                     $this->response->setData('METHOD NOT ALLOWED');
                     $error->request = $this->request;
@@ -145,7 +190,8 @@ class Engine
         $requestHandlers = $this->routeHandler->getCurrentRouteRequestCallbacks();
         if (!empty($requestHandlers)) {
             foreach ($requestHandlers as $handler) {
-                if ($requestNew = CallableHandler::tryHandleCallableWithArguments($handler, [$this->request])) {
+                $requestNew = CallableHandler::tryHandleCallableWithArguments($handler, [$this->request]);
+                if ($requestNew && $requestNew instanceof RequestInterface) {
                     $this->request = $requestNew;
                 }
             }
@@ -153,7 +199,8 @@ class Engine
 
         // route handler
         $httpHandler = $this->routeHandler->getCurrentRouteCallback();
-        if ($responseNew = CallableHandler::tryHandleCallableWithArguments($httpHandler, [$this->request, $this->response])) {
+        $responseNew = CallableHandler::tryHandleCallableWithArguments($httpHandler, [$this->request, $this->response]);
+        if ($responseNew && $responseNew instanceof ResponseInterface) {
             $this->response = $responseNew;
         }
 
@@ -161,17 +208,22 @@ class Engine
         $responseHandlers = $this->routeHandler->getCurrentRouteResponseCallbacks();
         if (!empty($responseHandlers)) {
             foreach ($responseHandlers as $handler) {
-                if ($responseNew = CallableHandler::tryHandleCallableWithArguments($handler, [$this->response])) {
+                $responseNew = CallableHandler::tryHandleCallableWithArguments($handler, [$this->response]);
+                if ($responseNew && $responseNew instanceof ResponseInterface) {
                     $this->response = $responseNew;
                 }
             }
         }
 
         // send response
-
         $this->sendResponse($this->response);
     }
 
+    /**
+     * Send response and stop the whole script
+     *
+     * @param ResponseInterface $response
+     */
     private function sendResponse(ResponseInterface $response)
     {
         if (!empty(ob_get_contents())) ob_clean();
@@ -182,7 +234,6 @@ class Engine
                 header($responseHeaderName . ': ' . $responseHeaderValue, true);
             }
         }
-
         echo $response->getData();
 
         die();

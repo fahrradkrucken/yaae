@@ -2,7 +2,10 @@
 
 namespace FahrradKrucken\YAAE\Core;
 
-
+/**
+ * Class Route
+ * @package FahrradKrucken\YAAE\Core
+ */
 class Route
 {
     const
@@ -12,6 +15,9 @@ class Route
         METHOD_PATCH = 'PATCH',
         METHOD_DELETE = 'DELETE';
 
+    /**
+     * @var array Routes information, needed for Router handler
+     */
     public $routeInfo = [
         'methods'            => [],
         'path'               => [],
@@ -21,6 +27,11 @@ class Route
         'routes'             => [],
     ];
 
+    /**
+     * Route constructor.
+     *
+     * @param array $routeInfo
+     */
     public function __construct(array $routeInfo = [])
     {
         if (!empty($routeInfo)) {
@@ -43,6 +54,13 @@ class Route
         }
     }
 
+    /**
+     * @param array           $methods
+     * @param string          $path
+     * @param string|callable $callback - accepts FahrradKrucken\YAAE\Http\RequestInterface and FahrradKrucken\YAAE\Http\ResponseInterface
+     *
+     * @return self
+     */
     public static function new(array $methods, string $path, $callback): self
     {
         return new self([
@@ -52,14 +70,26 @@ class Route
         ]);
     }
 
+    /**
+     * @param string  $path
+     * @param Route[] $routes
+     *
+     * @return self
+     */
     public static function group(string $path, array $routes): self
     {
         return new self([
-            'path'     => $path,
+            'path'   => $path,
             'routes' => $routes,
         ]);
     }
 
+    /**
+     * @param string          $path
+     * @param string|callable $callback
+     *
+     * @return self
+     */
     public static function get(string $path, $callback): self
     {
         return new self([
@@ -69,6 +99,12 @@ class Route
         ]);
     }
 
+    /**
+     * @param string          $path
+     * @param string|callable $callback
+     *
+     * @return self
+     */
     public static function post(string $path, $callback): self
     {
         return new self([
@@ -78,6 +114,12 @@ class Route
         ]);
     }
 
+    /**
+     * @param string          $path
+     * @param string|callable $callback
+     *
+     * @return self
+     */
     public static function put(string $path, $callback): self
     {
         return new self([
@@ -87,6 +129,12 @@ class Route
         ]);
     }
 
+    /**
+     * @param string          $path
+     * @param string|callable $callback
+     *
+     * @return self
+     */
     public static function patch(string $path, $callback): self
     {
         return new self([
@@ -96,6 +144,12 @@ class Route
         ]);
     }
 
+    /**
+     * @param string          $path
+     * @param string|callable $callback
+     *
+     * @return self
+     */
     public static function delete(string $path, $callback): self
     {
         return new self([
@@ -106,9 +160,9 @@ class Route
     }
 
     /**
-     * @param callable|string $callback
+     * @param callable|string $callback - accepts \FahrradKrucken\YAAE\Http\RequestInterface
      *
-     * @return $this
+     * @return self
      */
     public function addRequestCallback($callback)
     {
@@ -117,9 +171,9 @@ class Route
     }
 
     /**
-     * @param callable|string $callback
+     * @param callable|string $callback - accepts \FahrradKrucken\YAAE\Http\ResponseInterface
      *
-     * @return $this
+     * @return self
      */
     public function addResponseCallback($callback)
     {

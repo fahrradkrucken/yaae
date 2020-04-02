@@ -44,14 +44,17 @@ class RouteHandler implements RouteHandlerInterface
     }
 
     /**
-     * @param string $requestPath
+     * @inheritDoc
      */
-    public function setRequestPath(string $requestPath = ''): void
+    public function setRequestPath(string $requestPath = '')
     {
         $requestPath = !empty($requestPath) ? $requestPath : $_SERVER['REQUEST_URI'];
         $this->requestPath = '/' . trim(explode('?', $requestPath)[0], ' /');
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getRequestPath(): string
     {
         return $this->requestPath;
@@ -60,23 +63,32 @@ class RouteHandler implements RouteHandlerInterface
     /**
      * @param string $requestMethod
      */
-    public function setRequestMethod(string $requestMethod = ''): void
+    public function setRequestMethod(string $requestMethod = '')
     {
         $this->requestMethod = !empty($requestMethod) ?
             strtoupper($requestMethod) :
             strtoupper($_SERVER['REQUEST_METHOD']);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getRequestMethod(): string
     {
         return $this->requestMethod;
     }
 
-    public function addRoutes(array $routes): void
+    /**
+     * @inheritDoc
+     */
+    public function addRoutes(array $routes)
     {
         $this->routes = $routes;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function dispatch()
     {
         $routesList = $this->routesArrayToRoutesList($this->routes); // Routes array to flat list
@@ -138,7 +150,7 @@ class RouteHandler implements RouteHandlerInterface
      */
     protected function routesArrayToRoutesList(
         array $routesArray, string $routePath = '', array $routeCallbacksBefore = [], array $routeCallbacksAfter = []
-    )
+    ): array
     {
         $routesList = [];
         foreach ($routesArray as $route) {
@@ -168,7 +180,7 @@ class RouteHandler implements RouteHandlerInterface
      *
      * @return array|mixed
      */
-    protected function routesListFormat(array $routesList)
+    protected function routesListFormat(array $routesList): array
     {
         return array_map(function ($route) {
             // Fix request_callbacks order (parent goes first)
@@ -193,32 +205,50 @@ class RouteHandler implements RouteHandlerInterface
         }, $routesList);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getCurrentRouteStatus(): string
     {
         return $this->currentRoute['status'];
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getCurrentRoutePath(): string
     {
         return $this->currentRoute['request_path'];
     }
 
-    public function getCurrentRouteArguments(): ?array
+    /**
+     * @inheritDoc
+     */
+    public function getCurrentRouteArguments(): array
     {
         return $this->currentRoute['route_args'];
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getCurrentRouteCallback()
     {
         return $this->currentRoute['route_callback'];
     }
 
-    public function getCurrentRouteRequestCallbacks(): ?array
+    /**
+     * @inheritDoc
+     */
+    public function getCurrentRouteRequestCallbacks(): array
     {
         return $this->currentRoute['route_request_callbacks'];
     }
 
-    public function getCurrentRouteResponseCallbacks(): ?array
+    /**
+     * @inheritDoc
+     */
+    public function getCurrentRouteResponseCallbacks(): array
     {
         return $this->currentRoute['route_response_callbacks'];
     }
