@@ -131,7 +131,7 @@ class Engine
     public function errorHandlerDefault(\Throwable $error)
     {
         if (($error instanceof Error) && ($error->response instanceof ResponseInterface)) {
-            $this->sendResponse($error->response);
+            self::sendResponse($error->response);
         } else {
             echo 'Error Code:' . $error->getCode() . '<br>';
             echo 'Error Message:' . $error->getMessage() . '<br>';
@@ -216,7 +216,7 @@ class Engine
         }
 
         // send response
-        $this->sendResponse($this->response);
+        self::sendResponse($this->response);
     }
 
     /**
@@ -224,7 +224,7 @@ class Engine
      *
      * @param ResponseInterface $response
      */
-    private function sendResponse(ResponseInterface $response)
+    public static function sendResponse(ResponseInterface $response)
     {
         if (!empty(ob_get_contents())) ob_clean();
 

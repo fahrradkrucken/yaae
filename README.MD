@@ -25,7 +25,7 @@ become more pretty with your code. We have 3 rules:
 `RequestInterface $request`. If you'll not return `RequestInterface`, everything will be fine 
 anyway, so you can just do something inside your "Request Middleware" and return nothing;
 * Action handler accepts 2 args `RequestInterface $request, ResponseInterface $response` and 
-SHOULD return `ResponseInterface $request`;
+SHOULD return `ResponseInterface $response`;
 * Response Handler accepts 1 arg `ResponseInterface $response` and SHOULD return
  `ResponseInterface $response`. We have here the same rules as for request handlers.
  
@@ -54,7 +54,69 @@ You can replace error handlers:
 
 Note that `\FahrradKrucken\YAAE\Http\Error` has `$request` and `$response` props, it could be useful. 
 For example, when you'll get 404 (Not Found) or 405 (Method not allowed) error from `RouteHandler`, 
-you can understand this by `$errorHttp->response->getStatus()`.
+you can understand this by `$errorHttp->getCode()`.
+
+Examples for API errors:
+```php
+<?php
+use FahrradKrucken\YAAE\Engine;
+use FahrradKrucken\YAAE\Http\ResponseInterface;
+
+// ... Some Code ...
+
+$engine->setErrorHandler(function (Throwable $error) {
+    $response = new \FahrradKrucken\YAAE\Http\Response();
+    $response->setStatus(ResponseInterface::STATUS_OK);
+    $response->setHeader('Content-Type', 'application/json');
+    $response->setData(
+        json_encode(
+            [
+                'error_code'         => $error->getCode(),
+                'error_msg' => $error->getMessage(),
+            ],
+            JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE
+        )
+    );
+    Engine::sendResponse($response);
+});
+
+$engine->setErrorHandlerHttp(function (\FahrradKrucken\YAAE\Http\Error $error) {
+    if (
+        $error->getCode() === ResponseInterface::STATUS_NOT_FOUND ||
+        $error->getCode() === ResponseInterface::STATUS_NOT_ALLOWED_METHOD
+    ) { // Default Router errors
+        $error->response->setHeader('Content-Type', 'application/json');
+        $error->response->setData(
+            json_encode(
+                [
+                    'error_code' => $error->response->getStatus(),
+                    'error_msg'  => $error->response->getData(),
+                ],
+                JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE
+            )
+        );
+        Engine::sendResponse($error->response);
+    } else { // Custom errors
+        if (!$error->response || !($error->response instanceof ResponseInterface)) {
+            $newResponse = new \FahrradKrucken\YAAE\Http\Response();
+            $newResponse->setStatus(ResponseInterface::STATUS_BAD_REQUEST);
+            $newResponse->setData(json_encode(
+                    [
+                        'error_code' => $error->getCode(),
+                        'error_msg'  => $error->getMessage(),
+                    ],
+                    JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE
+                )
+            );
+        } else {
+            $newResponse = $error->response;
+        }
+        $newResponse->setHeader('Content-Type', 'application/json');
+        Engine::sendResponse($newResponse);
+    }
+});
+// ... Some Code ...
+```
 
 ## Templating
 
@@ -63,7 +125,44 @@ you can understand this by `$errorHttp->response->getStatus()`.
 You can use any templating engine you want, just dont forget to put the result 
 inside the `$response->setData($templateHtmlString)`. If you prefer simple 
 php-html templating, you can use default `FahrradKrucken\YAAE\Core\TemplateHandler`.
-You can find examples in the `demo` dir.
+Example:
+```php
+<?php
+/**
+ * Route Handler 
+ */
+use FahrradKrucken\YAAE\Http\RequestInterface;
+use FahrradKrucken\YAAE\Http\ResponseInterface;
+use FahrradKrucken\YAAE\Core\TemplateHandler;
+
+// ... Some Code ...
+function actionTemplate(RequestInterface $request, ResponseInterface $response)
+    {
+        $response->setData(
+            TemplateHandler::render('demo-template', [
+                'foo' => 12345,
+                'bar' => 'Lorem ipsum dolor sit amet',
+                'baz' => false,
+            ])
+        );
+        return $response;
+    }
+// ... Some Code ...
+```
+
+```php
+<?php
+/**
+ * Route Template
+ * 
+ * @var int $foo
+ * @var string $bar
+ * @var bool $baz
+ */
+?>
+<h3 style="text-align: center"><?= $foo . ' - ' . $bar ?></h3>
+<p style="text-align: center"><?= $baz ? 'YES' : 'NO' ?></p>
+```
 
 #### JSON & other API
 
