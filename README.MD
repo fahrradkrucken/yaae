@@ -115,7 +115,9 @@ $engine->setErrorHandlerHttp(function (\FahrradKrucken\YAAE\Http\Error $error) {
         Engine::sendResponse($newResponse);
     }
 });
+
 // ... Some Code ...
+
 ```
 
 ## Templating
@@ -134,6 +136,8 @@ Example:
 use FahrradKrucken\YAAE\Http\RequestInterface;
 use FahrradKrucken\YAAE\Http\ResponseInterface;
 use FahrradKrucken\YAAE\Core\TemplateHandler;
+
+TemplateHandler::setTemplatePath(__DIR__);
 
 // ... Some Code ...
 function actionTemplate(RequestInterface $request, ResponseInterface $response)
